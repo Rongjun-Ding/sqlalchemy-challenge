@@ -149,21 +149,35 @@ def start(start):
 
 # When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
 def start_end(start, end):
-    start = dt.datetime.strptime(start, "%Y-%m-%d").date()
-    end = dt.datetime.strptime(end, "%Y-%m-%d").date()
+    start = dt.datetime.strptime("2017-2-20", "%Y-%m-%d").date()
+    end = dt.datetime.strptime("2017-2-26", "%Y-%m-%d").date()
+    results = session.query(Measurement.tobs).filter(Measurement.date >= start).filter(Measurement.date <= end).all() 
+    sum = 0
+    min_temp = 1000
+    max_temp = 0
+    count = 0
 
-    st_end_date_query =  session.query(func.min(Measurement.tobs).label('tmin'), func.avg(Measurement.tobs).label('tavg'), func.max(Measurement.tobs).label('tmax')).\
-                         filter(Measurement.date >= start).filter(Measurement.date <= end).all()
+    for tobs in results:
+        tobs = tobs[0]
+        
+#check for new max or min
+        if tobs < min_temp:
+            min_temp = tobs
+        if tobs > max_temp:
+            max_temp = tobs
+        
+        sum = sum + tobs
+        count = count + 1
 
-    #When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
-    st_end_date_list = []
-    for row in st_end_date_query:
-        calc_temp_s_e = {}
-        calc_temp_s_e['tmin'] = row.tmin
-        calc_temp_s_e['tavg'] = row.tavg
-        calc_temp_s_e['tmax'] = row.tmax
-        st_end_date_list.append(calc_temp_s_e)
-    return jsonify(st_end_date_list)
+#division by 0 test
+    try:
+        avg_temp = sum/count
+    except:
+        avg_temp = -1
+
+#return the avg, max, & min temp within the date range
+    return jsonify(avg_temp, max_temp, min_temp)
+    #return 'Avg, max, min are {}  {}  {}'.format(avg_temp, max_temp, min_temp)
 
 
 if __name__ == "__main__":
