@@ -119,8 +119,15 @@ def tobs():
 
 # When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
 def start(start):
-    
-    start = dt.datetime.strptime(start, "%Y-%m-%d").date()
+    start_date_query = session.query(func.max(Measurement.date))
+    for record in start_date_query:
+        start = record 
+        print(start)
+    start_date_query = str(start)
+
+    match1 = re.search('\d{4}-\d{2}-\d{2}', start_date_query)
+
+    start = dt.datetime.strptime(match1.group(), "%Y-%m-%d").date()
     #When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
     start_date_query = session.query(func.min(Measurement.tobs).label('tmin'), func.avg(Measurement.tobs).label('tavg'), func.max(Measurement.tobs).label('tmax')).\
                         filter(Measurement.date >= start).all()
@@ -141,7 +148,7 @@ def start(start):
 # When given the start only, calculate TMIN, TAVG, and TMAX for all dates greater than and equal to the start date.
 
 # When given the start and the end date, calculate the TMIN, TAVG, and TMAX for dates between the start and end date inclusive.
-def calc_temps2(start, end):
+def start_end(start, end):
     start = dt.datetime.strptime(start, "%Y-%m-%d").date()
     end = dt.datetime.strptime(end, "%Y-%m-%d").date()
 
